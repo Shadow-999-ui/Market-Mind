@@ -1,0 +1,62 @@
+import streamlit as st
+from groq import Groq
+
+# Page config
+st.set_page_config(page_title="Market Mind", page_icon="🧠", layout="wide")
+
+# Header
+st.title("🧠 Market Mind")
+st.subheader("AI-Powered Market Research Analyst")
+st.markdown("---")
+
+# API Key input
+api_key = st.text_input("Enter your Groq API Key:", type="password", placeholder="gsk_...")
+
+# User input
+idea = st.text_area("Enter your product or business idea:", 
+                     placeholder="Example: An AI fitness coach app for college students",
+                     height=100)
+
+# Analyze button
+if st.button("🔍 Analyze Market", type="primary"):
+    if not api_key:
+        st.error("Please enter your Groq API Key!")
+    elif not idea:
+        st.error("Please enter a business idea!")
+    else:
+        with st.spinner("🤖 Market Mind is researching... please wait..."):
+            try:
+                client = Groq(api_key=api_key)
+                
+                prompt = f"""You are an expert market research analyst. Analyze the following business idea and provide a detailed market research report.
+
+Business Idea: {idea}
+
+Please provide a comprehensive report with these sections:
+1. 📊 Market Overview - Brief description of the market
+2. 🎯 Target Audience - Who are the ideal customers
+3. 📈 Market Size - Estimated TAM, SAM, SOM
+4. 🏆 Top Competitors - List 3-5 main competitors
+5. 💡 Market Trends - Current trends in this space
+6. ⚠️ Key Challenges - Main obstacles to overcome
+7. ✅ Recommendations - Top 3 actionable next steps
+
+Make it professional, detailed and useful for a startup founder."""
+
+                response = client.chat.completions.create(
+                    model="llama3-70b-8192",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=2000
+                )
+                
+                result = response.choices[0].message.content
+                
+                st.success("✅ Market Research Report Ready!")
+                st.markdown("---")
+                st.markdown(result)
+                
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+st.markdown("---")
+st.caption("Built for GenAI Forge Hackathon 2026 | Powered by Groq + LLaMA3")

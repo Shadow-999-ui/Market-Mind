@@ -1,0 +1,53 @@
+import streamlit as st
+from groq import Groq
+
+# Page config
+st.set_page_config(page_title="Market Mind", page_icon="🧠", layout="centered")
+
+# Header
+st.title("🧠 Market Mind")
+st.subheader("AI-Powered Market Research Analyst")
+st.markdown("---")
+
+# API Key input
+api_key = st.text_input("Enter your Groq API Key", type="password", placeholder="gsk_...")
+
+# User input
+idea = st.text_input("💡 Enter your product or business idea", placeholder="e.g. AI Fitness Coach App")
+
+# Analyze button
+if st.button("🔍 Analyze Market"):
+    if not api_key:
+        st.error("Please enter your Groq API Key!")
+    elif not idea:
+        st.error("Please enter a business idea!")
+    else:
+        with st.spinner("🤖 Market Mind is researching... please wait..."):
+            client = Groq(api_key=api_key)
+            prompt = f"""
+You are an expert market research analyst. Analyze the following business idea and provide a detailed market research report:
+
+Business Idea: {idea}
+
+Please provide:
+1. Market Overview - What is this market?
+2. Target Audience - Who are the customers?
+3. Market Size - Estimated TAM, SAM, SOM
+4. Top 3 Competitors - Name and what they do
+5. Key Trends - 3 current trends in this market
+6. Opportunities - 3 key opportunities
+7. Challenges - 3 main challenges
+8. Go-To-Market Strategy - How to enter this market
+9. Verdict - Should someone enter this market? Why?
+
+Be specific, data-driven, and concise.
+"""
+            response = client.chat.completions.create(
+                model="llama3-8b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=2000
+            )
+            result = response.choices[0].message.content
+            st.success("✅ Market Research Report Ready!")
+            st.markdown("---")
+            st.markdown(result)
